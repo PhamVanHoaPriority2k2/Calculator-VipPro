@@ -2,11 +2,11 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<!-- Khóa vĩnh viễn zoom bằng Viewport -->
+<!-- Cấm zoom bằng Viewport settings -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 <title>Phạm Văn Hoà Priority Calculator</title>
 <style>
-    /* Reset & Chống chọn văn bản/chống zoom */
+    /* Reset & Khóa vĩnh viễn zoom/chọn văn bản */
     * {
         touch-action: manipulation;
         -webkit-touch-callout: none;
@@ -19,7 +19,7 @@
         box-sizing: border-box;
     }
 
-    /* ĐỊNH NGHĨA THEME SÁNG / TỐI */
+    /* ĐỊNH NGHĨA CHẾ ĐỘ SÁNG / TỐI ĐEN */
     :root {
         --bg-color: #e9e9e9;
         --casing-bg: #2b55b3;
@@ -27,21 +27,28 @@
         --screen-bg: #e5ecd9;
         --screen-text: #222222;
         --num-btn-bg: #ffffff;
-        --num-btn-text: #333333;
+        --num-btn-text: #000000;
         --drawer-bg: rgba(255, 255, 255, 0.98);
         --num-glow: rgba(0, 122, 255, 0.8);
+        --theme-btn-bg: #ffffff;
+        --theme-btn-text: #000000;
+        --btn-border: #cccccc;
     }
 
+    /* Giao diện Tối Đen (Pure Black) */
     body.dark-mode {
-        --bg-color: #121212;
-        --casing-bg: #1c3879;
-        --face-bg: #222222;
-        --screen-bg: #1e2e1e;
-        --screen-text: #71dd73;
-        --num-btn-bg: #333333;
+        --bg-color: #000000;
+        --casing-bg: #0d0d0d;
+        --face-bg: #000000;
+        --screen-bg: #ffffff;
+        --screen-text: #000000;
+        --num-btn-bg: #1a1a1a;
         --num-btn-text: #ffffff;
-        --drawer-bg: rgba(30, 30, 30, 0.98);
-        --num-glow: rgba(0, 229, 255, 0.8);
+        --drawer-bg: #0a0a0a;
+        --num-glow: rgba(255, 255, 255, 0.8);
+        --theme-btn-bg: #222222;
+        --theme-btn-text: #ffffff;
+        --btn-border: #444444;
     }
 
     body {
@@ -56,16 +63,103 @@
         transition: background-color 0.3s ease;
     }
 
+    /* LỚP PHỦ KHÓA BẢO VỆ (LOCK SCREEN OVERLAY) */
+    .lock-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+    }
+
+    .lock-card {
+        background-color: #1a1a1a;
+        border: 2px solid #333;
+        border-radius: 16px;
+        padding: 25px 20px;
+        width: 320px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        color: white;
+    }
+
+    .lock-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .key-input {
+        width: 100%;
+        padding: 12px 40px 12px 12px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background-color: #000;
+        color: #fff;
+        font-size: 15px;
+        outline: none;
+        font-weight: bold;
+        -webkit-user-select: text;
+        user-select: text;
+    }
+
+    .toggle-pwd {
+        position: absolute;
+        right: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        user-select: none;
+    }
+
+    .unlock-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .unlock-btn:active {
+        background-color: #218838;
+    }
+
+    .error-msg {
+        color: #fa4252;
+        font-size: 12px;
+        margin-top: 10px;
+        display: none;
+        font-weight: bold;
+    }
+
     /* Vỏ ngoài máy tính */
     .device-casing {
         background-color: var(--casing-bg);
         border-radius: 20px;
         padding: 6px;
         box-shadow: 
-            5px 15px 25px rgba(0,0,0,0.3),
-            inset -3px -3px 10px rgba(0,0,0,0.2),
-            inset 3px 3px 5px rgba(255,255,255,0.3);
-        width: 330px;
+            5px 15px 25px rgba(0,0,0,0.5),
+            inset -3px -3px 10px rgba(0,0,0,0.3),
+            inset 3px 3px 5px rgba(255,255,255,0.2);
+        width: 340px;
         position: relative;
         transition: background-color 0.3s ease;
     }
@@ -75,7 +169,7 @@
         background-color: var(--face-bg);
         border-radius: 16px;
         padding: 18px 10px 20px 10px;
-        box-shadow: inset 0px 0px 5px rgba(0,0,0,0.1);
+        box-shadow: inset 0px 0px 5px rgba(0,0,0,0.2);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -84,12 +178,12 @@
         transition: background-color 0.3s ease;
     }
 
-    /* Hàng chứa Logo, Nút Sáng/Tối & Nút Nguồn */
+    /* Logo, Nút Sáng/Tối Bằng Chữ & Nút Nguồn */
     .logo-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        width: 92%;
+        width: 94%;
         margin-bottom: 12px;
     }
 
@@ -100,8 +194,8 @@
     }
 
     .logo {
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 800;
         letter-spacing: -0.2px;
         transition: color 0.3s ease;
     }
@@ -116,19 +210,18 @@
         text-shadow: 0 0 5px rgba(220, 53, 69, 0.4);
     }
 
-    /* Nút Chế độ Sáng/Tối đặt cạnh Logo */
     .theme-btn {
-        background: none;
-        border: none;
-        font-size: 14px;
+        background-color: var(--theme-btn-bg);
+        color: var(--theme-btn-text);
+        border: 1px solid #777;
+        font-size: 9px;
+        font-weight: 900;
         cursor: pointer;
-        padding: 2px 4px;
+        padding: 4px 6px;
         border-radius: 4px;
-        transition: transform 0.2s;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
-    .theme-btn:active { transform: scale(1.2); }
 
-    /* Nút nguồn Power ON/OFF */
     .power-btn {
         background-color: #333;
         color: #fff;
@@ -136,24 +229,24 @@
         border-radius: 6px;
         padding: 4px 8px;
         font-size: 11px;
-        font-weight: bold;
+        font-weight: 900;
         cursor: pointer;
-        box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
     }
 
     /* Màn hình LCD */
     .screen-container {
-        width: 92%;
-        height: 65px;
+        width: 94%;
+        height: 70px;
         background-color: var(--screen-bg);
         border-radius: 6px;
-        box-shadow: inset 2px 3px 5px rgba(0,0,0,0.25);
+        box-shadow: inset 2px 3px 5px rgba(0,0,0,0.3);
         margin-bottom: 12px;
         position: relative;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 6px 10px;
+        padding: 6px 12px;
         transition: background-color 0.3s ease;
     }
 
@@ -167,26 +260,27 @@
 
     .icon-btn {
         cursor: pointer;
-        opacity: 0.75;
+        opacity: 0.85;
         transition: opacity 0.2s;
-        font-weight: 600;
+        font-weight: 800;
+        color: var(--screen-text);
     }
-    .icon-btn:hover { opacity: 1; }
 
     .screen-text {
         text-align: right;
         font-family: 'Courier New', Courier, monospace;
-        font-size: 26px;
-        font-weight: bold;
+        font-size: 30px;
+        font-weight: 900;
         color: var(--screen-text);
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+        transition: color 0.3s ease;
     }
 
     /* Trạng thái OFF */
     .device-face.is-off .screen-container {
-        background-color: #111111 !important;
+        background-color: #050505 !important;
     }
     .device-face.is-off .screen-text,
     .device-face.is-off .screen-tools {
@@ -214,9 +308,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid #444;
         padding-bottom: 8px;
-        font-weight: bold;
+        font-weight: 900;
         color: var(--num-btn-text);
     }
 
@@ -225,8 +319,9 @@
         color: white;
         border: none;
         border-radius: 4px;
-        padding: 3px 8px;
+        padding: 4px 8px;
         font-size: 11px;
+        font-weight: 900;
         cursor: pointer;
     }
 
@@ -241,17 +336,17 @@
 
     .history-item {
         padding: 6px 0;
-        border-bottom: 1px dashed #eee;
+        border-bottom: 1px dashed #444;
         text-align: right;
     }
 
-    .history-item-calc { color: #888; font-size: 12px; }
-    .history-item-res { font-weight: bold; font-size: 15px; }
+    .history-item-calc { color: #888; font-size: 13px; font-weight: bold; }
+    .history-item-res { font-weight: 900; font-size: 16px; }
 
-    /* Hàng nút phép tính (+ - * /) */
+    /* Hàng nút phép tính (+ - * /) - PHÍM ĐẬM CHỮ ĐẬM */
     .top-buttons {
         display: flex;
-        width: 92%;
+        width: 94%;
         justify-content: space-between;
         margin-bottom: 12px;
     }
@@ -259,58 +354,58 @@
     .top-btn {
         background-color: #2b55b3;
         color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 0;
-        font-size: 18px;
-        font-weight: bold;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 10px;
+        padding: 10px 0;
+        font-size: 22px;
+        font-weight: 900;
         flex: 1;
         margin: 0 3px;
-        box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
+        box-shadow: 2px 4px 6px rgba(0,0,0,0.4);
         cursor: pointer;
         will-change: transform, box-shadow;
         transition: transform 0.05s ease, box-shadow 0.05s ease;
     }
 
-    /* Bàn phím chính */
+    /* Bàn phím chính - BÀN PHÍM CHỮ TO RÕ PHÍM ĐẬM */
     .keypad {
         display: grid;
         grid-template-columns: repeat(3, 1fr) 1.2fr;
-        gap: 10px;
-        width: 92%;
+        gap: 12px;
+        width: 94%;
     }
 
     .num-btn {
         background-color: var(--num-btn-bg);
         color: var(--num-btn-text);
-        border: none;
+        border: 2px solid var(--btn-border);
         border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        font-size: 19px;
-        font-weight: 600;
+        width: 54px;
+        height: 54px;
+        font-size: 24px;
+        font-weight: 900;
         display: flex;
         justify-content: center;
         align-items: center;
         justify-self: center;
-        box-shadow: 2px 4px 6px rgba(0,0,0,0.15);
+        box-shadow: 2px 4px 8px rgba(0,0,0,0.3);
         cursor: pointer;
         will-change: transform, box-shadow;
         transition: transform 0.05s ease, box-shadow 0.05s ease, background-color 0.3s ease;
     }
 
     .act-btn {
-        border: none;
-        border-radius: 8px;
-        width: 52px;
-        height: 46px;
-        font-size: 20px;
-        font-weight: bold;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-radius: 10px;
+        width: 58px;
+        height: 52px;
+        font-size: 24px;
+        font-weight: 900;
         display: flex;
         justify-content: center;
         align-items: center;
         justify-self: end;
-        box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+        box-shadow: 2px 4px 8px rgba(0,0,0,0.3);
         cursor: pointer;
         color: white;
         will-change: transform, box-shadow;
@@ -318,10 +413,10 @@
     }
 
     .btn-red { background-color: #fa4252; }
-    .btn-yellow { background-color: #fade2a; color: #444; }
+    .btn-yellow { background-color: #fade2a; color: #000; }
     .btn-green { background-color: #31c98e; }
 
-    /* HIỆU ỨNG PHÁT SÁNG (GLOW) KHI ẤN SỐ VÀ PHÍM */
+    /* HIỆU ỨNG PHÁT SÁNG KHI BẤM */
     .num-btn.pressed {
         transform: scale(0.92) translateY(2px) !important;
         box-shadow: 0 0 15px var(--num-glow), 0 0 25px var(--num-glow) !important;
@@ -350,6 +445,23 @@
 </head>
 <body>
 
+<!-- LỚP PHỦ KHÓA MÁY TÍNH -->
+<div class="lock-overlay" id="lockOverlay">
+    <div class="lock-card">
+        <div class="lock-title">BẢO MẬT HỆ THỐNG</div>
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Vui lòng nhập Key để mở khóa sử dụng:</p>
+        
+        <div class="input-group">
+            <input type="password" id="keyInput" class="key-input" placeholder="Nhập Key mở khóa..." autocomplete="off">
+            <span class="toggle-pwd" id="togglePwd" title="Ẩn/Hiện">👁️</span>
+        </div>
+        
+        <button class="unlock-btn" id="unlockBtn">MỞ KHÓA MÁY TÍNH</button>
+        <div class="error-msg" id="errorMsg">Key không chính xác! Vui lòng thử lại.</div>
+    </div>
+</div>
+
+<!-- MÁY TÍNH BẢO MẬT -->
 <div class="device-casing">
     <div class="device-face" id="deviceFace">
         
@@ -365,12 +477,11 @@
             </div>
         </div>
 
-        <!-- Logo, Nút Theme & Nút Nguồn -->
+        <!-- Logo, Nút Sáng/Tối Bằng Chữ & Nút Nguồn -->
         <div class="logo-container">
             <div class="brand-group">
                 <div class="logo status-on" id="brandLogo">Phạm Văn Hoà Priority 🇻🇳</div>
-                <!-- Nút Sáng Tối đặt sát bên Tên -->
-                <button class="theme-btn" id="btnTheme" title="Đổi giao diện Sáng/Tối">🌙</button>
+                <button class="theme-btn" id="btnTheme">Chế độ Tối</button>
             </div>
             <button class="power-btn" id="powerBtn">OFF</button>
         </div>
@@ -417,7 +528,42 @@
 </div>
 
 <script>
-    // --- 1. CHỐNG ZOOM VÀ TOUCH SCROLL ---
+    // --- 1. XỬ LÝ KHÓA MÁY TÍNH BẰNG KEY BẢO MẬT ---
+    const SECRET_KEY = "calculator22/12/2002@@";
+    const lockOverlay = document.getElementById('lockOverlay');
+    const keyInput = document.getElementById('keyInput');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const togglePwd = document.getElementById('togglePwd');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Nút Ẩn / Hiện Mật Khẩu
+    togglePwd.addEventListener('click', () => {
+        if (keyInput.type === 'password') {
+            keyInput.type = 'text';
+            togglePwd.innerText = '🙈';
+        } else {
+            keyInput.type = 'password';
+            togglePwd.innerText = '👁️';
+        }
+    });
+
+    // Mở khóa khi nhấn nút hoặc bấm Enter
+    function checkUnlock() {
+        if (keyInput.value === SECRET_KEY) {
+            lockOverlay.style.display = 'none';
+            errorMsg.style.display = 'none';
+        } else {
+            errorMsg.style.display = 'block';
+            keyInput.style.borderColor = '#fa4252';
+        }
+    }
+
+    unlockBtn.addEventListener('click', checkUnlock);
+    keyInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkUnlock();
+    });
+
+    // --- 2. KHÓA VĨNH VIỄN ZOOM ---
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
     let lastTouchEnd = 0;
     document.addEventListener('touchend', function (e) {
@@ -427,7 +573,7 @@
     }, false);
     document.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-    // --- 2. XỬ LÝ MÁY TÍNH ---
+    // --- 3. TÍNH TOÁN MÁY TÍNH ---
     const display = document.getElementById('display');
     const deviceFace = document.getElementById('deviceFace');
     const brandLogo = document.getElementById('brandLogo');
@@ -521,7 +667,7 @@
         updateDisplay();
     }
 
-    // --- 3. QUẢN LÝ LỊCH SỬ ---
+    // --- 4. LỊCH SỬ PHÉP TÍNH ---
     function addHistory(calcText, resultText) {
         historyData.unshift({ calc: calcText, res: resultText });
         renderHistory();
@@ -540,7 +686,6 @@
         `).join('');
     }
 
-    // Xóa toàn bộ lịch sử
     btnClearHistory.addEventListener('click', () => {
         historyData = [];
         renderHistory();
@@ -549,7 +694,7 @@
     btnHistory.addEventListener('click', () => historyDrawer.classList.add('open'));
     closeHistory.addEventListener('click', () => historyDrawer.classList.remove('open'));
 
-    // --- 4. BẬT/TẮT NGUỒN ---
+    // --- 5. BẬT / TẮT NGUỒN ---
     powerBtn.addEventListener('click', () => {
         isPowerOn = !isPowerOn;
         if (isPowerOn) {
@@ -567,18 +712,18 @@
         }
     });
 
-    // --- 5. CHUYỂN ĐỔI SÁNG / TỐI ---
+    // --- 6. CHUYỂN CHẾ ĐỘ SÁNG / TỐI ---
     btnTheme.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
-        btnTheme.innerText = isDark ? '☀️' : '🌙';
+        btnTheme.innerText = isDark ? 'Chế độ Sáng' : 'Chế độ Tối';
     });
 
-    // --- 6. PHẢN HỒI SIÊU NHẠY & HIỆU ỨNG PHÁT SÁNG ---
+    // --- 7. PHẢN HỒI PHÍM BẤM PHÁT SÁNG ---
     const buttons = document.querySelectorAll('button');
 
     buttons.forEach(btn => {
-        if (btn.id === 'powerBtn' || btn.classList.contains('theme-btn') || btn.classList.contains('clear-history-btn')) return;
+        if (btn.id === 'powerBtn' || btn.classList.contains('theme-btn') || btn.classList.contains('clear-history-btn') || btn.id === 'unlockBtn') return;
 
         const handlePress = (e) => {
             e.preventDefault();
