@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<!-- Khóa vĩnh viễn zoom bằng Viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+<title>Phạm Văn Hoà Priority Calculator</title>
+<style>
+    /* Reset & Chống chọn văn bản/chống zoom */
+    * {
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        box-sizing: border-box;
+    }
+
+    /* ĐỊNH NGHĨA THEME SÁNG / TỐI */
+    :root {
+        --bg-color: #e9e9e9;
+        --casing-bg: #2b55b3;
+        --face-bg: #fcfcfc;
+        --screen-bg: #e5ecd9;
+        --screen-text: #222222;
+        --num-btn-bg: #ffffff;
+        --num-btn-text: #333333;
+        --drawer-bg: rgba(255, 255, 255, 0.98);
+        --num-glow: rgba(0, 122, 255, 0.8);
+    }
+
+    body.dark-mode {
+        --bg-color: #121212;
+        --casing-bg: #1c3879;
+        --face-bg: #222222;
+        --screen-bg: #1e2e1e;
+        --screen-text: #71dd73;
+        --num-btn-bg: #333333;
+        --num-btn-text: #ffffff;
+        --drawer-bg: rgba(30, 30, 30, 0.98);
+        --num-glow: rgba(0, 229, 255, 0.8);
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: var(--bg-color);
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Vỏ ngoài máy tính */
+    .device-casing {
+        background-color: var(--casing-bg);
+        border-radius: 20px;
+        padding: 6px;
+        box-shadow: 
+            5px 15px 25px rgba(0,0,0,0.3),
+            inset -3px -3px 10px rgba(0,0,0,0.2),
+            inset 3px 3px 5px rgba(255,255,255,0.3);
+        width: 330px;
+        position: relative;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Bề mặt máy tính */
+    .device-face {
+        background-color: var(--face-bg);
+        border-radius: 16px;
+        padding: 18px 10px 20px 10px;
+        box-shadow: inset 0px 0px 5px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Hàng chứa Logo, Nút Sáng/Tối & Nút Nguồn */
+    .logo-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 92%;
+        margin-bottom: 12px;
+    }
+
+    .brand-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .logo {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        transition: color 0.3s ease;
+    }
+
+    .logo.status-on {
+        color: #28a745;
+        text-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+    }
+
+    .logo.status-off {
+        color: #dc3545;
+        text-shadow: 0 0 5px rgba(220, 53, 69, 0.4);
+    }
+
+    /* Nút Chế độ Sáng/Tối đặt cạnh Logo */
+    .theme-btn {
+        background: none;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+    .theme-btn:active { transform: scale(1.2); }
+
+    /* Nút nguồn Power ON/OFF */
+    .power-btn {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Màn hình LCD */
+    .screen-container {
+        width: 92%;
+        height: 65px;
+        background-color: var(--screen-bg);
+        border-radius: 6px;
+        box-shadow: inset 2px 3px 5px rgba(0,0,0,0.25);
+        margin-bottom: 12px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 6px 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .screen-tools {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        font-size: 12px;
+    }
+
+    .icon-btn {
+        cursor: pointer;
+        opacity: 0.75;
+        transition: opacity 0.2s;
+        font-weight: 600;
+    }
+    .icon-btn:hover { opacity: 1; }
+
+    .screen-text {
+        text-align: right;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 26px;
+        font-weight: bold;
+        color: var(--screen-text);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* Trạng thái OFF */
+    .device-face.is-off .screen-container {
+        background-color: #111111 !important;
+    }
+    .device-face.is-off .screen-text,
+    .device-face.is-off .screen-tools {
+        display: none !important;
+    }
+
+    /* Drawer Lịch Sử */
+    .history-drawer {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--drawer-bg);
+        z-index: 10;
+        transition: top 0.3s ease;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .history-drawer.open { top: 0; }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 8px;
+        font-weight: bold;
+        color: var(--num-btn-text);
+    }
+
+    .clear-history-btn {
+        background-color: #fa4252;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+    .history-list {
+        flex: 1;
+        overflow-y: auto;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--num-btn-text);
+    }
+
+    .history-item {
+        padding: 6px 0;
+        border-bottom: 1px dashed #eee;
+        text-align: right;
+    }
+
+    .history-item-calc { color: #888; font-size: 12px; }
+    .history-item-res { font-weight: bold; font-size: 15px; }
+
+    /* Hàng nút phép tính (+ - * /) */
+    .top-buttons {
+        display: flex;
+        width: 92%;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .top-btn {
+        background-color: #2b55b3;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 0;
+        font-size: 18px;
+        font-weight: bold;
+        flex: 1;
+        margin: 0 3px;
+        box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
+        cursor: pointer;
+        will-change: transform, box-shadow;
+        transition: transform 0.05s ease, box-shadow 0.05s ease;
+    }
+
+    /* Bàn phím chính */
+    .keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr) 1.2fr;
+        gap: 10px;
+        width: 92%;
+    }
+
+    .num-btn {
+        background-color: var(--num-btn-bg);
+        color: var(--num-btn-text);
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        font-size: 19px;
+        font-weight: 600;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        justify-self: center;
+        box-shadow: 2px 4px 6px rgba(0,0,0,0.15);
+        cursor: pointer;
+        will-change: transform, box-shadow;
+        transition: transform 0.05s ease, box-shadow 0.05s ease, background-color 0.3s ease;
+    }
+
+    .act-btn {
+        border: none;
+        border-radius: 8px;
+        width: 52px;
+        height: 46px;
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        justify-self: end;
+        box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+        cursor: pointer;
+        color: white;
+        will-change: transform, box-shadow;
+        transition: transform 0.05s ease, box-shadow 0.05s ease;
+    }
+
+    .btn-red { background-color: #fa4252; }
+    .btn-yellow { background-color: #fade2a; color: #444; }
+    .btn-green { background-color: #31c98e; }
+
+    /* HIỆU ỨNG PHÁT SÁNG (GLOW) KHI ẤN SỐ VÀ PHÍM */
+    .num-btn.pressed {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 0 15px var(--num-glow), 0 0 25px var(--num-glow) !important;
+    }
+
+    .top-btn.pressed {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 0 15px rgba(43, 85, 179, 0.9), 0 0 25px rgba(0, 122, 255, 0.8) !important;
+    }
+
+    .act-btn.btn-red.pressed {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 0 15px rgba(250, 66, 82, 0.9), 0 0 25px rgba(250, 66, 82, 0.8) !important;
+    }
+
+    .act-btn.btn-yellow.pressed {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 0 15px rgba(250, 222, 42, 0.9), 0 0 25px rgba(250, 222, 42, 0.8) !important;
+    }
+
+    .act-btn.btn-green.pressed {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 0 15px rgba(49, 201, 142, 0.9), 0 0 25px rgba(49, 201, 142, 0.8) !important;
+    }
+</style>
+</head>
+<body>
+
+<div class="device-casing">
+    <div class="device-face" id="deviceFace">
+        
+        <!-- Drawer Lịch Sử -->
+        <div class="history-drawer" id="historyDrawer">
+            <div class="history-header">
+                <span>Lịch Sử Phép Tính</span>
+                <button class="clear-history-btn" id="btnClearHistory">Xóa tất cả</button>
+                <span class="icon-btn" id="closeHistory">✕</span>
+            </div>
+            <div class="history-list" id="historyList">
+                <div style="text-align: center; color: #888; margin-top: 20px;">Chưa có lịch sử</div>
+            </div>
+        </div>
+
+        <!-- Logo, Nút Theme & Nút Nguồn -->
+        <div class="logo-container">
+            <div class="brand-group">
+                <div class="logo status-on" id="brandLogo">Phạm Văn Hoà Priority 🇻🇳</div>
+                <!-- Nút Sáng Tối đặt sát bên Tên -->
+                <button class="theme-btn" id="btnTheme" title="Đổi giao diện Sáng/Tối">🌙</button>
+            </div>
+            <button class="power-btn" id="powerBtn">OFF</button>
+        </div>
+
+        <!-- Màn hình LCD -->
+        <div class="screen-container">
+            <div class="screen-tools">
+                <span class="icon-btn" id="btnHistory" title="Xem lịch sử">↺ Lịch sử</span>
+            </div>
+            <div class="screen-text" id="display">0</div>
+        </div>
+        
+        <!-- Hàng nút phép tính (+ - * /) -->
+        <div class="top-buttons">
+            <button class="top-btn" data-action="op" data-value="+">+</button>
+            <button class="top-btn" data-action="op" data-value="-">-</button>
+            <button class="top-btn" data-action="op" data-value="×">×</button>
+            <button class="top-btn" data-action="op" data-value="÷">÷</button>
+        </div>
+
+        <!-- Bàn phím chính -->
+        <div class="keypad">
+            <button class="num-btn" data-action="num" data-value="1">1</button>
+            <button class="num-btn" data-action="num" data-value="2">2</button>
+            <button class="num-btn" data-action="num" data-value="3">3</button>
+            <button class="act-btn btn-red" data-action="clear">X</button>
+
+            <button class="num-btn" data-action="num" data-value="4">4</button>
+            <button class="num-btn" data-action="num" data-value="5">5</button>
+            <button class="num-btn" data-action="num" data-value="6">6</button>
+            <button class="act-btn btn-yellow" data-action="delete">⌫</button>
+
+            <button class="num-btn" data-action="num" data-value="7">7</button>
+            <button class="num-btn" data-action="num" data-value="8">8</button>
+            <button class="num-btn" data-action="num" data-value="9">9</button>
+            <button class="act-btn btn-green" data-action="equals">=</button>
+
+            <button class="num-btn" data-action="num" data-value=".">.</button>
+            <button class="num-btn" data-action="num" data-value="0">0</button>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. CHỐNG ZOOM VÀ TOUCH SCROLL ---
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (e) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+    }, false);
+    document.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+    // --- 2. XỬ LÝ MÁY TÍNH ---
+    const display = document.getElementById('display');
+    const deviceFace = document.getElementById('deviceFace');
+    const brandLogo = document.getElementById('brandLogo');
+    const powerBtn = document.getElementById('powerBtn');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnHistory = document.getElementById('btnHistory');
+    const closeHistory = document.getElementById('closeHistory');
+    const btnClearHistory = document.getElementById('btnClearHistory');
+    const historyDrawer = document.getElementById('historyDrawer');
+    const historyList = document.getElementById('historyList');
+
+    let currentInput = '0';
+    let previousInput = '';
+    let operator = null;
+    let shouldResetDisplay = false;
+    let isPowerOn = true;
+    let historyData = [];
+
+    function updateDisplay() {
+        display.innerText = currentInput;
+    }
+
+    function appendNum(number) {
+        if (!isPowerOn) return;
+        if (currentInput === '0' || shouldResetDisplay) {
+            currentInput = (number === '.') ? '0.' : number;
+            shouldResetDisplay = false;
+        } else {
+            if (number === '.' && currentInput.includes('.')) return;
+            if (currentInput.length < 10) {
+                currentInput += number;
+            }
+        }
+        updateDisplay();
+    }
+
+    function setOperator(op) {
+        if (!isPowerOn) return;
+        if (operator !== null && !shouldResetDisplay) {
+            calculate();
+        }
+        previousInput = currentInput;
+        operator = op;
+        shouldResetDisplay = true;
+    }
+
+    function calculate() {
+        if (!isPowerOn || operator === null || shouldResetDisplay) return;
+
+        let result;
+        const prev = parseFloat(previousInput);
+        const current = parseFloat(currentInput);
+
+        if (isNaN(prev) || isNaN(current)) return;
+
+        switch (operator) {
+            case '+': result = prev + current; break;
+            case '-': result = prev - current; break;
+            case '×': result = prev * current; break;
+            case '÷': result = current === 0 ? 'Error' : prev / current; break;
+            default: return;
+        }
+
+        if (result !== 'Error') {
+            result = Math.round(result * 1000000) / 1000000;
+            addHistory(`${previousInput} ${operator} ${currentInput}`, result);
+        }
+
+        currentInput = result.toString();
+        operator = null;
+        shouldResetDisplay = true;
+        updateDisplay();
+    }
+
+    function clearAll() {
+        if (!isPowerOn) return;
+        currentInput = '0';
+        previousInput = '';
+        operator = null;
+        shouldResetDisplay = false;
+        updateDisplay();
+    }
+
+    function deleteLast() {
+        if (!isPowerOn || shouldResetDisplay) return;
+        if (currentInput.length === 1 || currentInput === 'Error') {
+            currentInput = '0';
+        } else {
+            currentInput = currentInput.slice(0, -1);
+        }
+        updateDisplay();
+    }
+
+    // --- 3. QUẢN LÝ LỊCH SỬ ---
+    function addHistory(calcText, resultText) {
+        historyData.unshift({ calc: calcText, res: resultText });
+        renderHistory();
+    }
+
+    function renderHistory() {
+        if (historyData.length === 0) {
+            historyList.innerHTML = '<div style="text-align: center; color: #888; margin-top: 20px;">Chưa có lịch sử</div>';
+            return;
+        }
+        historyList.innerHTML = historyData.map(item => `
+            <div class="history-item">
+                <div class="history-item-calc">${item.calc} =</div>
+                <div class="history-item-res">${item.res}</div>
+            </div>
+        `).join('');
+    }
+
+    // Xóa toàn bộ lịch sử
+    btnClearHistory.addEventListener('click', () => {
+        historyData = [];
+        renderHistory();
+    });
+
+    btnHistory.addEventListener('click', () => historyDrawer.classList.add('open'));
+    closeHistory.addEventListener('click', () => historyDrawer.classList.remove('open'));
+
+    // --- 4. BẬT/TẮT NGUỒN ---
+    powerBtn.addEventListener('click', () => {
+        isPowerOn = !isPowerOn;
+        if (isPowerOn) {
+            deviceFace.classList.remove('is-off');
+            brandLogo.classList.remove('status-off');
+            brandLogo.classList.add('status-on');
+            powerBtn.innerText = 'OFF';
+            clearAll();
+        } else {
+            deviceFace.classList.add('is-off');
+            brandLogo.classList.remove('status-on');
+            brandLogo.classList.add('status-off');
+            powerBtn.innerText = 'ON';
+            historyDrawer.classList.remove('open');
+        }
+    });
+
+    // --- 5. CHUYỂN ĐỔI SÁNG / TỐI ---
+    btnTheme.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        btnTheme.innerText = isDark ? '☀️' : '🌙';
+    });
+
+    // --- 6. PHẢN HỒI SIÊU NHẠY & HIỆU ỨNG PHÁT SÁNG ---
+    const buttons = document.querySelectorAll('button');
+
+    buttons.forEach(btn => {
+        if (btn.id === 'powerBtn' || btn.classList.contains('theme-btn') || btn.classList.contains('clear-history-btn')) return;
+
+        const handlePress = (e) => {
+            e.preventDefault();
+            btn.classList.add('pressed');
+
+            const action = btn.getAttribute('data-action');
+            const value = btn.getAttribute('data-value');
+
+            if (action === 'num') appendNum(value);
+            else if (action === 'op') setOperator(value);
+            else if (action === 'clear') clearAll();
+            else if (action === 'delete') deleteLast();
+            else if (action === 'equals') calculate();
+        };
+
+        const handleRelease = () => {
+            btn.classList.remove('pressed');
+        };
+
+        btn.addEventListener('pointerdown', handlePress);
+        btn.addEventListener('pointerup', handleRelease);
+        btn.addEventListener('pointerleave', handleRelease);
+    });
+</script>
+
+</body>
+</html>
