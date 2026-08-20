@@ -2,9 +2,19 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<!-- Khóa Zoom ở cấp độ Viewport trên thiết bị di động -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 <title>Phạm Văn Hoà Priority Calculator</title>
 <style>
+    /* Khóa hoàn toàn mọi thao tác cuộn/phóng to thu nhỏ bằng CSS */
+    html, body {
+        touch-action: none;
+        -webkit-text-size-adjust: 100%;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+    }
+
     * {
         touch-action: manipulation;
         -webkit-touch-callout: none;
@@ -54,9 +64,8 @@
         min-height: -webkit-fill-available;
         background-color: var(--bg-color);
         margin: 0;
-        padding: 15px 0;
+        padding: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        overflow-y: auto;
         transition: background-color 0.3s ease;
     }
 
@@ -126,7 +135,6 @@
         cursor: pointer;
     }
 
-    /* Màn hình hiển thị 2 dòng */
     .screen-container {
         width: 95%;
         height: 70px;
@@ -173,7 +181,6 @@
     .device-face.is-off .screen-tools,
     .device-face.is-off .expression-text { display: none !important; }
 
-    /* Drawer Lịch Sử */
     .history-drawer {
         position: absolute;
         top: -100%;
@@ -225,6 +232,7 @@
         font-family: monospace;
         font-size: 14px;
         color: var(--num-btn-text);
+        touch-action: pan-y; /* Cho phép cuộn dọc riêng trong lịch sử */
     }
 
     .history-item {
@@ -233,7 +241,6 @@
         text-align: right;
     }
 
-    /* Nút bấm phép tính (+ - * /) */
     .top-buttons {
         display: flex;
         width: 95%;
@@ -256,7 +263,6 @@
         transition: transform 0.05s, box-shadow 0.05s, background-color 0.2s;
     }
 
-    /* Nút phép tính đang hoạt động (SÁNG LÊN) */
     .top-btn.active-op {
         background-color: #00d2ff !important;
         color: #000 !important;
@@ -307,7 +313,6 @@
     .btn-yellow { background-color: #fade2a; color: #000; }
     .btn-green { background-color: #31c98e; }
 
-    /* Hiệu ứng nhấp nhanh khi bấm nút */
     .btn-pressed {
         transform: scale(0.92) translateY(2px) !important;
         box-shadow: 0 0 15px var(--num-glow) !important;
@@ -378,6 +383,38 @@
 </div>
 
 <script>
+    // --- BỘ CHẶN PHÓNG TO THU NHỎ (PREVENT ZOOM JAVASCRIPT) ---
+    // 1. Chặn phóng to bằng cách chụm 2 ngón tay (Pinch Zoom)
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    // 2. Chặn phóng to khi nhấp đúp liên tục (Double tap to zoom)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // 3. Chặn cuộn phím Ctrl + lăn chuột hoặc Ctrl + dấu +/- trên bàn phím máy tính
+    document.addEventListener('wheel', function(event) {
+        if (event.ctrlKey) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && (event.key === '+' || event.key === '-' || event.key === '=')) {
+            event.preventDefault();
+        }
+    });
+
+    // --- XỬ LÝ MÁY TÍNH ---
     const display = document.getElementById('display');
     const expressionEl = document.getElementById('expression');
     const deviceFace = document.getElementById('deviceFace');
@@ -541,7 +578,6 @@
         btnTheme.innerText = document.body.classList.contains('dark-mode') ? 'Chế độ Sáng' : 'Chế độ Tối';
     });
 
-    // PHẢN HỒI PHÍM BẤM SIÊU NHẠY & TỐC ĐỘ CAO
     const buttons = document.querySelectorAll('button');
     buttons.forEach(btn => {
         if (btn.id === 'powerBtn' || btn.classList.contains('theme-btn') || btn.classList.contains('clear-history-btn')) return;
